@@ -1,0 +1,3 @@
+.env
+kustomize/.env
+node_modules/

@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: simple-ci-
+  namespace: argo
+spec:
+  entrypoint: pipeline
+  volumes:
+    - name: workspace-volume
+      persistentVolumeClaim:
+        claimName: workspace-pvc # Reference the PVC you created
+  arguments:
+    parameters:
+      - name: repo-url
+        value: "git@github.com:gianowolf/dummy-flask.git"
+      - name: image-name
+        value: "your-dockerhub-username/dummy-flask"
+      - name: image-tag
+        value: "latest"
+  templates:
+    - name: pipeline
+      steps:
+        - - name: clone-repo
+            templateRef:
+              name: clone-repo
+              template: main
+            arguments:
+              parameters:
+                - name: repo-url
+                  value: "{{workflow.parameters.repo-url}}"
+
+        # - - name: list-clone-dir
+        #     templateRef:
+        #       name: list-dir
+        #       template: main
+        #     arguments:
+        #       parameters:
+        #         - name: dir-path
+        #           value: "/workspace"
+
+        - - name: build-image
+            templateRef:
+              name: build-image
+              template: main
+            arguments:
+              parameters:
+                - name: image-name
+                  value: "{{workflow.parameters.image-name}}"
+                - name: image-tag
+                  value: "{{workflow.parameters.image-tag}}"
+
+        - - name: push-image
+            templateRef:
+              name: push-image
+              template: main
+            arguments:
+              parameters:
+                - name: image-name
+                  value: "{{workflow.parameters.image-name}}"
+                - name: image-tag
+                  value: "{{workflow.parameters.image-tag}}"

@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: list-dir
+  namespace: argo
+spec:
+  entrypoint: main
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: dir-path
+            description: "The directory to list"
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        args:
+          - |
+            echo "Listing contents of: {{inputs.parameters.dir-path}}"
+            ls -l {{inputs.parameters.dir-path}}
+        volumeMounts:
+          - name: workspace-volume
+            mountPath: /workspace

@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: push-image
+  namespace: argo
+spec:
+  entrypoint: main
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: image-name
+          - name: image-tag
+      container:
+        image: docker:latest
+        env:
+          - name: DOCKER_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: dockerhub-credentials
+                key: username
+          - name: DOCKER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: dockerhub-credentials
+                key: password
+        command: [sh, -c]
+        args:
+          - |
+            set -e; \
+            echo "Logging into Docker Hub..."; \
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin; \
+            echo "Tagging the image..."; \
+            docker tag /workspace/built-image.tar {{inputs.parameters.image-name}}:{{inputs.parameters.image-tag}}; \
+            echo "Pushing the image to Docker Hub..."; \
+            docker push {{inputs.parameters.image-name}}:{{inputs.parameters.image-tag}}
+        volumeMounts:
+          - name: workspace-volume
+            mountPath: /workspace

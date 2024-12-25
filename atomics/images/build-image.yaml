@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: build-image
+  namespace: argo
+spec:
+  entrypoint: main
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: image-name
+          - name: image-tag
+      container:
+        image: gcr.io/kaniko-project/executor:latest
+        args:
+          - "--context=/workspace"  # Use the Dockerfile and application code in /workspace
+          - "--dockerfile=/workspace/Dockerfile"
+          - "--no-push"             # Prevent Kaniko from pushing the image to any registry
+        volumeMounts:
+          - name: workspace-volume
+            mountPath: /workspace
