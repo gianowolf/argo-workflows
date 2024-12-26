@@ -16,7 +16,8 @@ spec:
         args:
           - "--context=/workspace"  # Use the Dockerfile and application code in /workspace
           - "--dockerfile=/workspace/Dockerfile"
-          - "--no-push"             # Prevent Kaniko from pushing the image to any registry
+          - "--destination={{inputs.parameters.image-name}}:{{inputs.parameters.image-tag}}" # Build and tag the image properly
+          - "--tar-path=/workspace/built-image.tar"  # Save the image as a tarball for further steps
         volumeMounts:
           - name: workspace-volume
             mountPath: /workspace

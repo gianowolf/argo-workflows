@@ -14,22 +14,22 @@ spec:
       container:
         image: docker:latest
         env:
-          - name: DOCKER_USERNAME
+          - name: DOCKERHUB_USERNAME
             valueFrom:
               secretKeyRef:
                 name: dockerhub-credentials
-                key: username
-          - name: DOCKER_PASSWORD
+                key: DOCKERHUB_USERNAME
+          - name: DOCKERHUB_TOKEN
             valueFrom:
               secretKeyRef:
                 name: dockerhub-credentials
-                key: password
+                key: DOCKERHUB_TOKEN
         command: [sh, -c]
         args:
           - |
             set -e; \
             echo "Logging into Docker Hub..."; \
-            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin; \
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin; \
             echo "Tagging the image..."; \
             docker tag /workspace/built-image.tar {{inputs.parameters.image-name}}:{{inputs.parameters.image-tag}}; \
             echo "Pushing the image to Docker Hub..."; \
